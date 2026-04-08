@@ -134,7 +134,7 @@ export default function Feedback() {
               <div className="feedback-item-header">
                 <span className="feedback-name">{fb.patient_name || 'Anonymous'}</span>
                 <span className="feedback-rating">
-                  {Array.from({ length: fb.rating }, (_, i) => '⭐').join('')}
+                  {'⭐'.repeat(fb.rating)}
                 </span>
               </div>
               {fb.comments && <p className="feedback-comment">{fb.comments}</p>}
