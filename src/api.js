@@ -42,7 +42,6 @@ export const queueAPI = {
       body: JSON.stringify({ name, dept, phone, symptoms, priority, age }) 
     })
     
-    // Auto-open WhatsApp on check-in
     if (result.whatsappLink) {
       window.open(result.whatsappLink, '_blank')
     }
@@ -53,7 +52,6 @@ export const queueAPI = {
   callNext: async () => {
     const result = await request('/call-next', { method: 'POST' })
     
-    // Auto-open WhatsApp on call next
     if (result.whatsappLink) {
       window.open(result.whatsappLink, '_blank')
     }

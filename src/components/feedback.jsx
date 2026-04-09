@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
-import { supabase } from '../api'
-
+import { feedbackAPI } from '../api'
 export default function Feedback() {
   const [rating, setRating] = useState(0)
   const [hoverRating, setHoverRating] = useState(0)
@@ -15,35 +14,25 @@ export default function Feedback() {
   }, [])
 
   const loadFeedbacks = async () => {
-    const { data } = await supabase
-      .from('feedback')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(5)
-    if (data) setFeedbacks(data)
-  }
+  const data = await feedbackAPI.getAll()
+  setFeedbacks(data)
+}
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    if (rating === 0) return
-    setSubmitting(true)
+const handleSubmit = async (e) => {
+  e.preventDefault()
+  if (rating === 0) return
+  setSubmitting(true)
 
-    const { error } = await supabase.from('feedback').insert({
-      patient_name: patientName || 'Anonymous',
-      rating,
-      comments
-    })
-
-    if (!error) {
-      setSubmitted(true)
-      setRating(0)
-      setComments('')
-      setPatientName('')
-      loadFeedbacks()
-      setTimeout(() => setSubmitted(false), 3000)
-    }
-    setSubmitting(false)
-  }
+  await feedbackAPI.submit(patientName || 'Anonymous', null, rating, comments)
+  
+  setSubmitted(true)
+  setRating(0)
+  setComments('')
+  setPatientName('')
+  loadFeedbacks()
+  setTimeout(() => setSubmitted(false), 3000)
+  setSubmitting(false)
+}
 
   const ratingEmojis = ['😞', '😐', '🙂', '😊', '🤩']
 
@@ -52,16 +41,36 @@ export default function Feedback() {
       <h3>💬 Patient Feedback</h3>
       {submitted && <div className="success-msg">✅ Thank you for your feedback! 💙</div>}
       <form onSubmit={handleSubmit}>
-        <input type="text" placeholder="Your name (optional)" value={patientName} onChange={(e) => setPatientName(e.target.value)} className="form-input" style={{ marginBottom: 10, width: '100%' }} />
+        <input 
+          type="text" 
+          placeholder="Your name (optional)" 
+          value={patientName} 
+          onChange={(e) => setPatientName(e.target.value)} 
+          className="form-input" 
+          style={{ marginBottom: 10, width: '100%' }}
+        />
         <div className="stars" style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
           {[1, 2, 3, 4, 5].map(star => (
-            <span key={star} onClick={() => setRating(star)} onMouseEnter={() => setHoverRating(star)} onMouseLeave={() => setHoverRating(0)} style={{ cursor: 'pointer', fontSize: 30, color: star <= (hoverRating || rating) ? '#fbbf24' : '#cbd5e1' }}>
+            <span 
+              key={star} 
+              onClick={() => setRating(star)} 
+              onMouseEnter={() => setHoverRating(star)} 
+              onMouseLeave={() => setHoverRating(0)} 
+              style={{ cursor: 'pointer', fontSize: 30, color: star <= (hoverRating || rating) ? '#fbbf24' : '#cbd5e1' }}
+            >
               ★
             </span>
           ))}
         </div>
-        <textarea placeholder="Share your experience..." value={comments} onChange={(e) => setComments(e.target.value)} rows="3" className="form-input" style={{ marginBottom: 10, width: '100%' }} />
-        <button type="submit" disabled={submitting || rating === 0} className="btn btn-primary btn-full" style={{ width: '100%' }}>
+        <textarea 
+          placeholder="Share your experience..." 
+          value={comments} 
+          onChange={(e) => setComments(e.target.value)} 
+          rows="3" 
+          className="form-input" 
+          style={{ marginBottom: 10, width: '100%' }}
+        />
+        <button type="submit" disabled={submitting || rating === 0} className="btn btn-primary btn-full">
           {submitting ? 'Submitting...' : '📝 Submit Feedback'}
         </button>
       </form>

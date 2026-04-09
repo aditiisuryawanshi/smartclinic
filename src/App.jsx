@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { queueAPI, authAPI, supabase } from './api'
+import { queueAPI, authAPI } from "./api";
 import Feedback from './components/Feedback'
 import './App.css'
 import { INIT_DEPTS, INIT_NOTIFS, INIT_FOLLOWUPS, WA_TEMPLATES } from './data/initialData'
@@ -52,23 +52,6 @@ export default function App() {
     }
   }
 
-  // Load on mount
-  useEffect(() => {
-    loadQueue()
-  }, [])
-
-  // Real-time subscription
-  useEffect(() => {
-    const subscription = supabase
-      .channel('queue-changes')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'queue_entries' }, 
-        () => loadQueue()
-      )
-      .subscribe()
-    
-    return () => subscription.unsubscribe()
-  }, [])
 
   const callNext = async () => {
     if (!queue.length) {
