@@ -1,6 +1,6 @@
 // src/api.js - Calls Railway Backend with WhatsApp links
 
-const API_URL = 'https://smartclinic-production-e926.up.railway.app'
+const API_URL = 'https://smartclinic-production-1998.up.railway.app'
 
 async function request(endpoint, options = {}) {
   const token = localStorage.getItem('token')

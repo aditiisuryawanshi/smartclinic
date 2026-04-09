@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { queueAPI, authAPI } from "./api";
 import Feedback from './components/Feedback'
 import './App.css'
-import { INIT_DEPTS, INIT_NOTIFS, INIT_FOLLOWUPS, WA_TEMPLATES } from './data/initialData'
+import { INIT_DEPTS, INIT_NOTIFS, INIT_FOLLOWUPS, WA_TEMPLATES, SYMPTOMS, DEPT_COLORS } from './data/initialData';
 import AuthScreen from './components/AuthScreen'
 import TopBar from './components/TopBar'
 import ToastManager from './components/ToastManager'

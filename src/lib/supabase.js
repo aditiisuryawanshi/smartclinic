@@ -1,0 +1,2 @@
+const supabaseUrl = 'https://rqnwwvvtctfwqkuasier.supabase.co'  // ← Your URL
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJxbnd3dnZ0Y3Rmd3FrdWFzaWVyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2NjM1MDQsImV4cCI6MjA5MTIzOTUwNH0.YKeQtRr2V2IcY7rTmqBkxoCCuLHUZzUOxUxKxs_HhJs'  // ← Your anon key
