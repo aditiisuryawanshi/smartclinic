@@ -7,6 +7,23 @@ export default function TopBar({ user, page, navItems, nsToken, served, depts, o
     `Total waiting: ${totalWaiting}`,
     ...Object.entries(depts).map(([n, d]) => `${n}: ${d.count} waiting`),
   ];
+  const handleLogout = () => {
+  localStorage.removeItem('token')
+  localStorage.removeItem('user')
+  window.location.href = '/'
+}
+<button onClick={onLogout} className="logout-btn" style={{
+  background: '#fee2e2',
+  border: '1px solid #dc2626',
+  borderRadius: '8px',
+  padding: '6px 12px',
+  cursor: 'pointer',
+  fontSize: '12px',
+  color: '#dc2626',
+  marginLeft: '8px'
+}}>
+  🚪 Logout
+</button>
 
   // Duplicate for seamless loop
   const tickerContent = [...tickerItems, ...tickerItems];

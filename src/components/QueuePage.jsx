@@ -1,10 +1,9 @@
-import { DEPT_COLORS } from '../data/initialData';
 
 export default function QueuePage({
   queue, served, waSent, depts,
   nsToken, nsMeta, nsBounce,
   onCallNext, onServe, onNotify, onGotoCheckin
-}) {
+})  {
   const sorted = [...queue].sort((a, b) =>
     ({ high: 0, medium: 1, low: 2 }[a.priority] - { high: 0, medium: 1, low: 2 }[b.priority])
   );
@@ -126,3 +125,12 @@ export default function QueuePage({
     </div>
   );
 }
+// WhatsApp reminder button next to each patient
+<button
+  className="btn btn-ghost btn-xs"
+  onClick={() => queueAPI.sendReminder(p.id)}
+  title="Send WhatsApp Reminder"
+  style={{ color: '#25D366' }}
+>
+  💬 Remind
+</button>

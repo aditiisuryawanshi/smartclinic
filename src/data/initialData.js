@@ -1,60 +1,67 @@
+// ============================================
+// INITIAL DATA FOR MEDIQUEUE
+// ============================================
+
+// Demo users for authentication
 export const DEMO_USERS = [
-  { email: 'admin@clinic.com',   pass: 'admin',   role: 'admin',
-    name: 'Dr. Sharma',  phone: '9876500001' },
-  { email: 'patient@clinic.com', pass: 'patient', role: 'patient',
-    name: 'Riya Patel',  phone: '9876543210' },
+  { email: 'admin@clinic.com', password: 'admin', role: 'admin', name: 'Dr. Sharma', phone: '9876500001' },
+  { email: 'patient@clinic.com', password: 'patient', role: 'patient', name: 'Riya Patel', phone: '9876543210' }
 ];
 
+// Department colors for UI
 export const DEPT_COLORS = {
   'General Medicine': '#185FA5',
-  'ENT':              '#0F6E56',
-  'Dental':           '#3B6D11',
-  'Orthopedic':       '#854F0B',
-  'Pediatric':        '#993556',
+  'ENT': '#0F6E56',
+  'Dental': '#3B6D11',
+  'Orthopedic': '#854F0B',
+  'Pediatric': '#993556'
 };
 
-export const INIT_QUEUE = [
-  { id: 1, token: '38', name: 'Arun Kumar',   dept: 'ENT',
-    phone: '9876511111', priority: 'medium', symptoms: ['Headache'], wait: 28 },
-  { id: 2, token: '39', name: 'Sneha Joshi',  dept: 'Dental',
-    phone: '9876522222', priority: 'low',    symptoms: ['Toothache'], wait: 20 },
-  { id: 3, token: '40', name: 'Vikram Singh', dept: 'General Medicine',
-    phone: '9876533333', priority: 'high',   symptoms: ['Chest pain'], wait: 5 },
-  { id: 4, token: '41', name: 'Priya Mehta',  dept: 'Pediatric',
-    phone: '9876544444', priority: 'medium', symptoms: ['Fever'], wait: 42 },
-];
-
+// Initial department counts
 export const INIT_DEPTS = {
-  'General Medicine': { count: 6 },
-  'ENT':              { count: 2 },
-  'Dental':           { count: 2 },
-  'Orthopedic':       { count: 1 },
-  'Pediatric':        { count: 1 },
+  'General Medicine': { count: 0 },
+  'ENT': { count: 0 },
+  'Dental': { count: 0 },
+  'Orthopedic': { count: 0 },
+  'Pediatric': { count: 0 }
 };
 
-export const INIT_NOTIFS = [
-  { type: 'wa',  name: 'Arun Kumar',  phone: '9876511111',
-    msg: "You're next! Token #38 — Room 1.", time: '10:32 AM', status: 'sent' },
-  { type: 'sms', name: 'Sneha Joshi', phone: '9876522222',
-    msg: 'Token #39 — your turn in ~10 min.', time: '10:28 AM', status: 'sent' },
-];
+// Initial notifications (empty)
+export const INIT_NOTIFS = [];
 
-export const INIT_FOLLOWUPS = [
-  { name: 'Arun Kumar', phone: '9876511111', date: '2026-03-10',
-    type: 'Lab results review', notes: 'Check CBC and ESR', sent: true },
-  { name: 'Priya Mehta', phone: '9876544444', date: '2026-03-08',
-    type: 'Medication follow-up', notes: 'Continue antibiotics', sent: false },
-];
+// Initial follow-ups (empty)
+export const INIT_FOLLOWUPS = [];
 
+// WhatsApp message templates
 export const WA_TEMPLATES = {
-  next:   (n, t) => `Hello ${n}, your token *#${t}* is almost due! Head to clinic now. 🏥 — MediQueue`,
-  ready:  (n, t) => `${n}, it's your turn! Proceed to the room. Token *#${t}* 🔔 — MediQueue`,
-  delay:  (n, t) => `Hi ${n}, small delay for *#${t}*. Please stay seated. ⏳ — MediQueue`,
-  missed: (n, t) => `Hi ${n}, you missed token *#${t}*. Visit front desk to re-queue. — MediQueue`,
-  custom: ()     => document.getElementById('customMsgTA')?.value || '',
+  next: (name, token) => `🔔 Hello ${name}, your token #${token} is next in line! Please be ready.`,
+  ready: (name, token) => `✅ ${name}, token #${token} is ready! Please proceed to Room 3.`,
+  delay: (name, token) => `⏳ Hi ${name}, there's a small delay for token #${token}. Please wait.`,
+  missed: (name, token) => `⚠️ ${name}, you missed token #${token}. Please see front desk.`,
+  custom: () => ''
 };
 
+// Symptoms list for check-in form
 export const SYMPTOMS = [
-  'Fever', 'Headache', 'Breathing difficulty',
-  'Nausea', 'Joint pain', 'Chest pain', 'Dizziness', 'Cold/Cough',
+  'Fever',
+  'Headache',
+  'Cough',
+  'Cold',
+  'Nausea',
+  'Joint Pain',
+  'Chest Pain',
+  'Dizziness',
+  'Breathing difficulty'
 ];
+
+// Initial queue data (empty - will load from Supabase)
+export const INIT_QUEUE = [];
+
+// Initial departments data
+export const INIT_DEPTS_DATA = {
+  'General Medicine': 0,
+  'ENT': 0,
+  'Dental': 0,
+  'Orthopedic': 0,
+  'Pediatric': 0
+};

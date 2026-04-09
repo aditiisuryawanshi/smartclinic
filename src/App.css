@@ -481,3 +481,25 @@ textarea.form-input { resize: vertical; min-height: 82px; }
   .topnav { display: none; }
   .app-main { padding: 16px; }
 }
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .g4 { grid-template-columns: 1fr; gap: 10px; }
+  .g-main { grid-template-columns: 1fr; gap: 16px; }
+  .topnav { display: none; }
+  .queue-row { flex-wrap: wrap; gap: 8px; }
+  .token-chip { width: 32px; height: 32px; font-size: 10px; }
+  .q-name { font-size: 12px; }
+  .q-meta { font-size: 10px; white-space: normal; }
+  .ns-token { font-size: 48px; }
+  .now-serving { padding: 16px; }
+  .app-main { padding: 12px; }
+  .app-topbar { flex-wrap: wrap; height: auto; padding: 8px 12px; gap: 8px; }
+  .topbar-right { margin-left: auto; }
+  .feedback-sidebar-container { position: static; margin-top: 16px; }
+  .dept-tabs { justify-content: center; }
+}
+
+@media (max-width: 480px) {
+  .user-chip span:first-of-type { display: none; }
+  .live-badge { display: none; }
+}

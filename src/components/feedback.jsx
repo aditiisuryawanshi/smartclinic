@@ -1,18 +1,14 @@
 import { useState, useEffect } from 'react'
-import { supabase } from '../lib/supabase'
+import { supabase } from '../api'
 
 export default function Feedback() {
   const [rating, setRating] = useState(0)
   const [hoverRating, setHoverRating] = useState(0)
   const [comments, setComments] = useState('')
   const [patientName, setPatientName] = useState('')
-  const [tokenId, setTokenId] = useState('')
   const [feedbacks, setFeedbacks] = useState([])
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
-
-  const ratingEmojis = ['😞', '😐', '🙂', '😊', '🤩']
-  const ratingLabels = ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
 
   useEffect(() => {
     loadFeedbacks()
@@ -34,7 +30,6 @@ export default function Feedback() {
 
     const { error } = await supabase.from('feedback').insert({
       patient_name: patientName || 'Anonymous',
-      token: tokenId || null,
       rating,
       comments
     })
@@ -44,103 +39,39 @@ export default function Feedback() {
       setRating(0)
       setComments('')
       setPatientName('')
-      setTokenId('')
       loadFeedbacks()
       setTimeout(() => setSubmitted(false), 3000)
     }
     setSubmitting(false)
   }
 
+  const ratingEmojis = ['😞', '😐', '🙂', '😊', '🤩']
+
   return (
     <div className="feedback-sidebar">
-      <div className="feedback-header">
-        <h3>💬 Patient Feedback</h3>
-      </div>
-
-      {submitted && (
-        <div className="feedback-success">
-          ✅ Thank you for your feedback! 💙
+      <h3>💬 Patient Feedback</h3>
+      {submitted && <div className="success-msg">✅ Thank you for your feedback! 💙</div>}
+      <form onSubmit={handleSubmit}>
+        <input type="text" placeholder="Your name (optional)" value={patientName} onChange={(e) => setPatientName(e.target.value)} className="form-input" style={{ marginBottom: 10, width: '100%' }} />
+        <div className="stars" style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+          {[1, 2, 3, 4, 5].map(star => (
+            <span key={star} onClick={() => setRating(star)} onMouseEnter={() => setHoverRating(star)} onMouseLeave={() => setHoverRating(0)} style={{ cursor: 'pointer', fontSize: 30, color: star <= (hoverRating || rating) ? '#fbbf24' : '#cbd5e1' }}>
+              ★
+            </span>
+          ))}
         </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="feedback-form">
-        <div className="form-group">
-          <label>Your Name (Optional)</label>
-          <input
-            type="text"
-            className="form-input"
-            value={patientName}
-            onChange={(e) => setPatientName(e.target.value)}
-            placeholder="Anonymous"
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Token Number (Optional)</label>
-          <input
-            type="text"
-            className="form-input"
-            value={tokenId}
-            onChange={(e) => setTokenId(e.target.value)}
-            placeholder="e.g., 101"
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Rate your experience</label>
-          <div className="feedback-stars">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <button
-                key={star}
-                type="button"
-                className={`star-btn ${star <= (hoverRating || rating) ? 'active' : ''}`}
-                onClick={() => setRating(star)}
-                onMouseEnter={() => setHoverRating(star)}
-                onMouseLeave={() => setHoverRating(0)}
-              >
-                <span className="star-emoji">{ratingEmojis[star - 1]}</span>
-                <span className="star-icon">★</span>
-              </button>
-            ))}
-          </div>
-          {(hoverRating || rating) > 0 && (
-            <div className="rating-label">
-              {ratingLabels[(hoverRating || rating) - 1]}
-            </div>
-          )}
-        </div>
-
-        <div className="form-group">
-          <label>Your Comments</label>
-          <textarea
-            className="form-input"
-            value={comments}
-            onChange={(e) => setComments(e.target.value)}
-            placeholder="Share your experience with us..."
-            rows="3"
-          />
-        </div>
-
-        <button type="submit" className="btn btn-primary btn-full" disabled={submitting || rating === 0}>
+        <textarea placeholder="Share your experience..." value={comments} onChange={(e) => setComments(e.target.value)} rows="3" className="form-input" style={{ marginBottom: 10, width: '100%' }} />
+        <button type="submit" disabled={submitting || rating === 0} className="btn btn-primary btn-full" style={{ width: '100%' }}>
           {submitting ? 'Submitting...' : '📝 Submit Feedback'}
         </button>
       </form>
-
       {feedbacks.length > 0 && (
-        <div className="recent-feedback">
+        <div className="recent-feedback" style={{ marginTop: 20 }}>
           <h4>⭐ Recent Reviews</h4>
-          {feedbacks.map((fb) => (
-            <div key={fb.id} className="feedback-item">
-              <div className="feedback-item-header">
-                <span className="feedback-name">{fb.patient_name || 'Anonymous'}</span>
-                <span className="feedback-rating">
-                  {'⭐'.repeat(fb.rating)}
-                </span>
-              </div>
-              {fb.comments && <p className="feedback-comment">{fb.comments}</p>}
-              <span className="feedback-date">
-                {new Date(fb.created_at).toLocaleDateString()}
-              </span>
+          {feedbacks.map(fb => (
+            <div key={fb.id} style={{ padding: 10, borderBottom: '1px solid #e8f2ff', marginBottom: 8 }}>
+              <strong>{fb.patient_name || 'Anonymous'}</strong> gave {'⭐'.repeat(fb.rating)}
+              {fb.comments && <p style={{ fontSize: 12, marginTop: 5, color: '#64748b' }}>{fb.comments}</p>}
             </div>
           ))}
         </div>
