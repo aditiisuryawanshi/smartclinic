@@ -503,3 +503,66 @@ textarea.form-input { resize: vertical; min-height: 82px; }
   .user-chip span:first-of-type { display: none; }
   .live-badge { display: none; }
 }
+
+/* ============================================
+   FEEDBACK SECTION STYLES
+   ============================================ */
+
+.feedback-sidebar {
+  background: white;
+  border: 1px solid #d4e4f7;
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.feedback-sidebar h3 {
+  font-size: 16px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e8f2ff;
+}
+
+.success-msg {
+  background: #ecfdf5;
+  color: #059669;
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  text-align: center;
+  font-size: 13px;
+}
+
+.feedback-sidebar .stars {
+  display: flex;
+  gap: 8px;
+  margin: 10px 0;
+  justify-content: center;
+}
+
+.feedback-sidebar textarea {
+  resize: vertical;
+  font-family: inherit;
+}
+
+.recent-feedback {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #e8f2ff;
+}
+
+.recent-feedback h4 {
+  font-size: 13px;
+  margin-bottom: 12px;
+  color: #334155;
+}
+
+.feedback-sidebar button {
+  width: 100%;
+}
+
+/* Mobile responsive for feedback */
+@media (max-width: 768px) {
+  .feedback-sidebar {
+    margin-top: 20px;
+  }
+}

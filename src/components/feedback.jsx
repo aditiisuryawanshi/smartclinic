@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { feedbackAPI } from '../api'
+
 export default function Feedback() {
   const [rating, setRating] = useState(0)
   const [hoverRating, setHoverRating] = useState(0)
@@ -14,27 +14,41 @@ export default function Feedback() {
   }, [])
 
   const loadFeedbacks = async () => {
-  const data = await feedbackAPI.getAll()
-  setFeedbacks(data)
-}
+    try {
+      const response = await fetch('https://smartclinic-production-e926.up.railway.app/api/feedback')
+      const data = await response.json()
+      setFeedbacks(data)
+    } catch (error) {
+      console.error('Failed to load feedbacks:', error)
+    }
+  }
 
-const handleSubmit = async (e) => {
-  e.preventDefault()
-  if (rating === 0) return
-  setSubmitting(true)
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    if (rating === 0) return
+    setSubmitting(true)
 
-  await feedbackAPI.submit(patientName || 'Anonymous', null, rating, comments)
-  
-  setSubmitted(true)
-  setRating(0)
-  setComments('')
-  setPatientName('')
-  loadFeedbacks()
-  setTimeout(() => setSubmitted(false), 3000)
-  setSubmitting(false)
-}
-
-  const ratingEmojis = ['😞', '😐', '🙂', '😊', '🤩']
+    try {
+      await fetch('https://smartclinic-production-e926.up.railway.app/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          patient_name: patientName || 'Anonymous',
+          rating,
+          comments
+        })
+      })
+      setSubmitted(true)
+      setRating(0)
+      setComments('')
+      setPatientName('')
+      loadFeedbacks()
+      setTimeout(() => setSubmitted(false), 3000)
+    } catch (error) {
+      console.error('Failed to submit feedback:', error)
+    }
+    setSubmitting(false)
+  }
 
   return (
     <div className="feedback-sidebar">
