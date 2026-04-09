@@ -1,91 +1,140 @@
 const express = require('express')
-const { Pool } = require('pg')
+const { createClient } = require('@supabase/supabase-js')
 const cors = require('cors')
 
 const app = express()
-
 app.use(cors())
 app.use(express.json())
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
-})
+// Supabase configuration
+const supabaseUrl = process.env.SUPABASE_URL
+const supabaseKey = process.env.SUPABASE_ANON_KEY
+const supabase = createClient(supabaseUrl, supabaseKey)
 
+// Health check
 app.get('/', (req, res) => {
-  res.json({ status: 'ok', message: 'MediQueue API is running!' })
+  res.json({ status: 'ok', message: 'MediQueue API running with Supabase!' })
 })
 
+// Get all waiting patients
 app.get('/api/queue', async (req, res) => {
   try {
-    const result = await pool.query(
-      "SELECT * FROM queue_entries WHERE status = 'waiting' ORDER BY created_at ASC"
-    )
-    res.json(result.rows)
+    const { data, error } = await supabase
+      .from('queue_entries')
+      .select('*')
+      .eq('status', 'waiting')
+      .order('created_at', { ascending: true })
+    
+    if (error) throw error
+    res.json(data)
   } catch (error) {
     res.status(500).json({ error: error.message })
   }
 })
 
+// Get next token
+app.get('/api/next-token', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('app_metadata')
+      .select('value')
+      .eq('key', 'next_token')
+      .single()
+    
+    if (error) throw error
+    res.json({ token: parseInt(data?.value || '101') })
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Check-in patient
 app.post('/api/checkin', async (req, res) => {
   const { name, dept, phone, symptoms, priority, age } = req.body
   
   try {
-    const tokenResult = await pool.query(
-      "SELECT value FROM app_metadata WHERE key = 'next_token'"
-    )
-    const tokenNumber = parseInt(tokenResult.rows[0]?.value || '101')
-    const nextToken = tokenNumber + 1
+    // Get next token
+    const { data: tokenData, error: tokenError } = await supabase
+      .from('app_metadata')
+      .select('value')
+      .eq('key', 'next_token')
+      .single()
     
-    await pool.query(
-      "UPDATE app_metadata SET value = $1 WHERE key = 'next_token'",
-      [String(nextToken)]
-    )
+    if (tokenError) throw tokenError
     
-    const countResult = await pool.query(
-      "SELECT COUNT(*) FROM queue_entries WHERE status = 'waiting'"
-    )
-    const position = parseInt(countResult.rows[0].count) + 1
+    const currentToken = parseInt(tokenData?.value || '101')
+    const nextToken = currentToken + 1
+    
+    await supabase
+      .from('app_metadata')
+      .update({ value: String(nextToken) })
+      .eq('key', 'next_token')
+    
+    // Get position
+    const { count, error: countError } = await supabase
+      .from('queue_entries')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'waiting')
+    
+    if (countError) throw countError
+    
+    const position = (count || 0) + 1
     const waitTime = position * 8
     
-    const result = await pool.query(
-      `INSERT INTO queue_entries (token, name, dept, phone, symptoms, priority, status, position, wait, age, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, 'waiting', $7, $8, $9, NOW())
-       RETURNING *`,
-      [String(tokenNumber), name, dept, phone || '', symptoms || [], priority || 'low', position, waitTime, age || null]
-    )
+    // Insert patient
+    const { data, error } = await supabase
+      .from('queue_entries')
+      .insert([{
+        token: String(currentToken),
+        name,
+        dept,
+        phone: phone || '',
+        symptoms: symptoms || [],
+        priority: priority || 'low',
+        status: 'waiting',
+        position,
+        wait: waitTime,
+        age: age || null,
+        created_at: new Date().toISOString()
+      }])
+      .select()
     
-    res.json({ success: true, patient: result.rows[0], token: tokenNumber, position, wait: waitTime })
+    if (error) throw error
+    
+    res.json({ 
+      success: true, 
+      patient: data[0], 
+      token: currentToken, 
+      position, 
+      wait: waitTime 
+    })
   } catch (error) {
     res.status(500).json({ error: error.message })
   }
 })
 
+// Call next patient
 app.post('/api/call-next', async (req, res) => {
   try {
-    const result = await pool.query(
-      `SELECT * FROM queue_entries 
-       WHERE status = 'waiting' 
-       ORDER BY 
-         CASE priority 
-           WHEN 'high' THEN 1 
-           WHEN 'medium' THEN 2 
-           WHEN 'low' THEN 3 
-         END, 
-         created_at ASC 
-       LIMIT 1`
-    )
+    const { data, error } = await supabase
+      .from('queue_entries')
+      .select('*')
+      .eq('status', 'waiting')
+      .order('priority', { ascending: false })
+      .order('created_at', { ascending: true })
+      .limit(1)
     
-    if (result.rows.length === 0) {
+    if (error) throw error
+    if (!data || data.length === 0) {
       return res.status(404).json({ error: 'No patients waiting' })
     }
     
-    const next = result.rows[0]
+    const next = data[0]
     
-    await pool.query(
-      "UPDATE queue_entries SET status = 'calling', called_at = NOW() WHERE id = $1",
-      [next.id]
-    )
+    await supabase
+      .from('queue_entries')
+      .update({ status: 'calling', called_at: new Date().toISOString() })
+      .eq('id', next.id)
     
     res.json({ success: true, patient: next })
   } catch (error) {
@@ -93,47 +142,19 @@ app.post('/api/call-next', async (req, res) => {
   }
 })
 
+// Serve patient
 app.patch('/api/serve/:id', async (req, res) => {
   const { id } = req.params
   
   try {
-    await pool.query(
-      "UPDATE queue_entries SET status = 'served', served_at = NOW() WHERE id = $1",
-      [id]
-    )
+    await supabase
+      .from('queue_entries')
+      .update({ status: 'served', served_at: new Date().toISOString() })
+      .eq('id', id)
+    
     res.json({ success: true })
   } catch (error) {
     res.status(500).json({ error: error.message })
   }
 })
 
-app.get('/api/feedback', async (req, res) => {
-  try {
-    const result = await pool.query(
-      "SELECT * FROM feedback ORDER BY created_at DESC LIMIT 10"
-    )
-    res.json(result.rows)
-  } catch (error) {
-    res.status(500).json({ error: error.message })
-  }
-})
-
-app.post('/api/feedback', async (req, res) => {
-  const { patient_name, token, rating, comments } = req.body
-  
-  try {
-    await pool.query(
-      `INSERT INTO feedback (patient_name, token, rating, comments, created_at) 
-       VALUES ($1, $2, $3, $4, NOW())`,
-      [patient_name || 'Anonymous', token || null, rating, comments || '']
-    )
-    res.json({ success: true })
-  } catch (error) {
-    res.status(500).json({ error: error.message })
-  }
-})
-
-const PORT = process.env.PORT || 3000
-app.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`)
-})
